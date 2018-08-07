@@ -11,6 +11,8 @@ KFUNC(0x00630580, make_chunk_table_system, int, (uint64_t *segment_info_gpu_padd
 KFUNC(0x00632540, sceSblServiceMailbox, int, (uint64_t module_id, void *query, void *reply));
 KFUNC(0x00642840, _sceSblAuthMgrSmFinalize, int, (void *ctx));
 
+KFUNC(0x140960, kern_get_self_auth_info, int, (struct thread* td, const char* path, int pathseg, char* info));
+
 /* globals */
 KDATA(0x010986A0, prison0, void*);
 KDATA(0x01A727E0, M_AUTHMGR, void);

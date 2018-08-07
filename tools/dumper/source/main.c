@@ -63,7 +63,7 @@ void kpatch_enablemapself(struct thread *td)
     uint8_t* map_self_patch1 = &kernel_base[0x117B0];
     uint8_t* map_self_patch2 = &kernel_base[0x117C0];
     /* map_self_patch3 = &kernel_base[0x13F03F]; (5.05) */
-    uint8_t* map_self_patch3 = &kernel_base[0x13EF2F];
+    uint8_t* map_self_patch3 = &kernel_base[0x13F03F];
 
     // sceSblACMgrIsAllowedToMmapSelf result
     kmem = (uint8_t*)map_self_patch1;
@@ -191,6 +191,27 @@ static void decrypt_self_to_elf(const char *file)
     free(elf_data);
 }
 
+static void decrypt_self_auth_info(const char *file)
+{
+    const char *dot;
+    char path[256];
+    uint8_t *elf_data;
+    size_t elf_size;
+    blob_t blob;
+
+    // Check filename and open file
+    dot = strrchr(file, '.');
+    if (!dot) return;
+    if (strcmp(dot, ".self") &&
+        strcmp(dot, ".sprx") &&
+        strcmp(dot, ".elf")  &&
+        strcmp(dot, ".bin")) {
+        return;
+    }
+    dprintf("Decrypting %s AUTH_INFO.\n", file);
+    self_get_auth_info(file);
+}
+
 static int decrypt_selfs(void)
 {
     traverse_dir("/", true, decrypt_self_to_blobs);
@@ -215,7 +236,7 @@ int _main(struct thread *td)
     syscall(11, kpatch_enablemapself);
 
     /* Dump data */
-    traverse_dir("/", true, decrypt_self_to_elf);
+    traverse_dir("/mnt/sandbox/pfsmnt", true, decrypt_self_auth_info);
 
     /* Return back to browser */
     dprintf("Dump finished!\n");

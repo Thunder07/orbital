@@ -69,6 +69,7 @@ typedef struct self_t {
 self_t* self_open(const char *file);
 int self_verify_header(self_t *self);
 int self_load_segments(self_t *self);
+int self_get_auth_info(const char* path);
 void self_close(self_t *self);
 
 #endif /* SELF_DECRYPTER_H */

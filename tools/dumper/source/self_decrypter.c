@@ -131,6 +131,13 @@ typedef struct self_kmethod_uap_t {
     void *args;
 } self_kmethod_uap_t;
 
+
+typedef struct path_kmethod_uap_t {
+    void *kmethod;
+    const char *path;
+    void *args;
+} path_kmethod_uap_t;
+
 int self_kacquire_context(
     struct thread *td, struct self_kmethod_uap_t *uap)
 {
@@ -481,6 +488,39 @@ error:
 int self_verify_header(self_t *self)
 {
     syscall(11, self_kverify_header, self);
+    return 0;
+}
+
+enum uio_seg
+{
+  UIO_USERSPACE,	/* from user data space */
+  UIO_SYSSPACE,		/* from system space */
+  UIO_USERISPACE	/* from user I space */
+};
+
+int self_kget_auth_info(
+    struct thread *td, struct path_kmethod_uap_t *uap)
+{
+    char auth_info[0x88];
+    memset(auth_info, 0, sizeof(auth_info));
+
+    const char *path = uap->path;
+    int res = kern_get_self_auth_info(td, path, (int)UIO_SYSSPACE, auth_info);
+    if(res == 0)
+    {
+        khexdump("AUTH_INFO", auth_info, 0x88);
+        kdprintf("END_AUTH_INFO\n");
+    }
+    else
+    {
+        kdprintf("Failed to get AUTH_INFO\n");
+    }
+    return 0;
+}
+
+int self_get_auth_info(const char *path)
+{
+    syscall(11, self_kget_auth_info, path);
     return 0;
 }
 
